@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login · Industrial AI Vision</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh;">
+  <div class="hazard-strip" style="position:fixed; top:0; left:0; right:0;"></div>
+  <div class="panel" style="width: 380px;">
+    <div class="text-center mb-4">
+      <div class="mark mx-auto" style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg, var(--safety-yellow), var(--safety-orange)); display:flex; align-items:center; justify-content:center; font-weight:800; color:#17110a; font-family: var(--font-display);">IV</div>
+      <h1 class="display-font h4 text-white mt-3 mb-0">Industrial AI Vision</h1>
+      <div class="text-muted small">Sign in to the Safety Monitoring Platform</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }} py-2" style="background: var(--steel-800); border: 1px solid var(--steel-700); color: var(--steel-100); font-size: 13px;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <label class="form-label text-muted small">Username</label>
+      <input type="text" name="username" class="form-control mb-3" value="{{ username or '' }}" required autofocus>
+      <label class="form-label text-muted small">Password</label>
+      <input type="password" name="password" class="form-control mb-4" required>
+      <button type="submit" class="btn-safety w-100">Sign In</button>
+    </form>
+    <div class="text-muted text-center mt-3" style="font-size: 12px;">
+      Default credentials: <span class="mono">admin / admin123</span> (change after first login)
+    </div>
+  </div>
+</body>
+</html>

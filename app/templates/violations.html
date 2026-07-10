@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Evidence Gallery{% endblock %}
+{% block eyebrow %}Compliance Evidence{% endblock %}
+{% block heading %}Evidence Gallery{% endblock %}
+
+{% block content %}
+<div class="panel mb-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-2">
+      <label class="form-label text-muted small">From</label>
+      <input type="date" name="date_from" value="{{ filters.date_from }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label text-muted small">To</label>
+      <input type="date" name="date_to" value="{{ filters.date_to }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label text-muted small">Violation Type</label>
+      <select name="type" class="form-select">
+        <option value="" {% if not filters.type %}selected{% endif %}>All</option>
+        <option value="missing_helmet" {% if filters.type == 'missing_helmet' %}selected{% endif %}>Missing Helmet</option>
+        <option value="missing_vest" {% if filters.type == 'missing_vest' %}selected{% endif %}>Missing Vest</option>
+        <option value="missing_boots" {% if filters.type == 'missing_boots' %}selected{% endif %}>Missing Boots</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label text-muted small">Min. Confidence</label>
+      <input type="number" step="0.05" min="0" max="1" name="min_confidence" value="{{ filters.min_confidence }}" class="form-control" placeholder="0.0 – 1.0">
+    </div>
+    <div class="col-md-2">
+      <button class="btn-safety w-100" type="submit">Filter</button>
+    </div>
+  </form>
+</div>
+
+<div class="row g-3">
+  {% for v in violations %}
+  <div class="col-md-3 col-sm-6">
+    <div class="panel h-100 p-2">
+      {% if v.screenshot_path %}
+      <img class="evidence-thumb" src="{{ url_for('violations.evidence_file', filename=v.screenshot_path.split('/')[-1]) }}" alt="{{ v.violation_type }}">
+      {% else %}
+      <div class="evidence-thumb d-flex align-items-center justify-content-center text-muted">No image</div>
+      {% endif %}
+      <div class="p-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="badge-severity {{ v.severity }}">{{ v.severity }}</span>
+          <span class="text-muted mono" style="font-size:11px;">{{ (v.confidence*100)|round(1) }}%</span>
+        </div>
+        <div class="text-white" style="font-size: 13px;">{{ v.violation_type.replace('_',' ')|title }}</div>
+        <div class="text-muted mono" style="font-size: 11px;">{{ v.timestamp }}</div>
+        <form action="{{ url_for('reports.generate', violation_id=v.id) }}" method="post" class="mt-2">
+          <button class="btn-outline-safety w-100" style="font-size:12px; padding:6px;" type="submit">Generate Report</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="panel text-muted text-center py-5">No violations match these filters.</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

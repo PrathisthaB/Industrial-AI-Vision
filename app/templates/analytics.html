@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block eyebrow %}Trends & Insights{% endblock %}
+{% block heading %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <strong class="text-white">Violations Over Time</strong>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary" onclick="setRange('daily')">Daily</button>
+          <button class="btn btn-outline-secondary" onclick="setRange('weekly')">Weekly</button>
+          <button class="btn btn-outline-secondary" onclick="setRange('monthly')">Monthly</button>
+        </div>
+      </div>
+      <canvas id="trendChart" height="110"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <strong class="text-white d-block mb-3">Violation Breakdown</strong>
+      <canvas id="breakdownChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <strong class="text-white d-block mb-3">Compliance Trend (last 14 days)</strong>
+  <canvas id="complianceChart" height="90"></canvas>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const daily = {{ daily|tojson }};
+const weekly = {{ weekly|tojson }};
+const monthly = {{ monthly|tojson }};
+const compliance = {{ compliance_trend|tojson }};
+const breakdown = {{ breakdown|tojson }};
+
+Chart.defaults.color = '#cbd5e1';
+Chart.defaults.borderColor = '#212a37';
+
+const trendCtx = document.getElementById('trendChart');
+let trendChart = new Chart(trendCtx, {
+  type: 'bar',
+  data: {
+    labels: daily.map(d => d.date),
+    datasets: [{ label: 'Violations', data: daily.map(d => d.count), backgroundColor: '#f5c518', borderRadius: 4 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+function setRange(range) {
+  let labels, values;
+  if (range === 'daily') { labels = daily.map(d => d.date); values = daily.map(d => d.count); }
+  if (range === 'weekly') { labels = weekly.map(d => d.week); values = weekly.map(d => d.count); }
+  if (range === 'monthly') { labels = monthly.map(d => d.month); values = monthly.map(d => d.count); }
+  trendChart.data.labels = labels;
+  trendChart.data.datasets[0].data = values;
+  trendChart.update();
+}
+
+new Chart(document.getElementById('breakdownChart'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(breakdown).map(k => k.replace('missing_', 'Missing ').replace(/^\w/, c => c.toUpperCase())),
+    datasets: [{ data: Object.values(breakdown), backgroundColor: ['#e6402f', '#f2782f', '#f5c518', '#2fa84f'] }]
+  },
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('complianceChart'), {
+  type: 'line',
+  data: {
+    labels: compliance.map(c => c.date),
+    datasets: [
+      { label: 'Helmet %', data: compliance.map(c => c.helmet), borderColor: '#2fa84f', tension: 0.3 },
+      { label: 'Vest %', data: compliance.map(c => c.vest), borderColor: '#f5c518', tension: 0.3 },
+      { label: 'Boots %', data: compliance.map(c => c.boots), borderColor: '#e6402f', tension: 0.3 },
+    ]
+  },
+  options: { scales: { y: { min: 0, max: 100 } } }
+});
+</script>
+{% endblock %}

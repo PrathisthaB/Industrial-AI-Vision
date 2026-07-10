@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Incident Reports{% endblock %}
+{% block eyebrow %}Compliance & EHS{% endblock %}
+{% block heading %}Incident Reports{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('reports.export_csv') }}" class="btn-outline-safety">⤓ Export CSV</a>
+</div>
+
+<div class="panel mb-4">
+  <strong class="text-white d-block mb-3">Generated Reports</strong>
+  <table class="table-industrial">
+    <thead>
+      <tr>
+        <th>Incident ID</th><th>Time</th><th>Violation</th><th>Severity</th><th>Confidence</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reports %}
+      <tr>
+        <td class="mono">{{ r.incident_code }}</td>
+        <td class="mono">{{ r.violation_time }}</td>
+        <td>{{ r.violation_type.replace('_',' ')|title }}</td>
+        <td><span class="badge-severity {{ r.severity }}">{{ r.severity }}</span></td>
+        <td>{{ (r.confidence*100)|round(1) }}%</td>
+        <td><a href="{{ url_for('reports.download', report_id=r.id) }}" class="btn-outline-safety" style="padding:4px 12px; font-size:12px;">Download PDF</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-muted text-center py-4">No incident reports generated yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <strong class="text-white d-block mb-3">Open Violations — Generate a Report</strong>
+  <table class="table-industrial">
+    <thead>
+      <tr><th>Time</th><th>Violation</th><th>Severity</th><th>Compliance Score</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for v in open_violations %}
+      <tr>
+        <td class="mono">{{ v.timestamp }}</td>
+        <td>{{ v.violation_type.replace('_',' ')|title }}</td>
+        <td><span class="badge-severity {{ v.severity }}">{{ v.severity }}</span></td>
+        <td>{{ v.compliance_score }}%</td>
+        <td>
+          <form action="{{ url_for('reports.generate', violation_id=v.id) }}" method="post">
+            <button class="btn-safety" style="padding:6px 14px; font-size:12px;" type="submit">Generate Report</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center py-4">No violations recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

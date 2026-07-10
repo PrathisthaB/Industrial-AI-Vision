@@ -122,6 +122,3 @@ docs: add architecture, API, installation, folder structure, future enhancements
 refactor: keep work.py CLI tool working, delegate to shared DetectionEngine
 ```
 
-## License
-
-MIT — see [`LICENSE`](LICENSE).
